@@ -151,7 +151,8 @@ class Remind(object):
         self.update2()
         return gmtime(max([getmtime(fname[0]) for fname in self._files]))
 
-    def append(self, text):
+    @classmethod
+    def ical(cls, text):
         cal = readOne(text)
         reminders = []
         for event in cal.vevent_list:
@@ -175,6 +176,10 @@ class Remind(object):
                 remind.append(" %s" % event.description.value.replace('\n', ' ').encode('utf-8'))
             reminders.append(" ".join(remind))
             reminders.append("\n")
+        return reminders
+
+    def append(self, text):
+        reminders = self.ical(text)
         open(self._filename, 'a').write(''.join(reminders))
 
     def remove(self, name):
