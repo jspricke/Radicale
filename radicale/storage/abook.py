@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # This file is part of Radicale Server - Calendar Server
@@ -23,7 +24,6 @@ Abook storage backend.
 
 import os
 import time
-from .. import ical
 from threading import Lock
 import ConfigParser
 
@@ -65,7 +65,7 @@ class Abook(object):
             vcard.append("UID:%s" % uid)
             vcard.append("END:VCARD")
             text = '\n'.join(vcard)
-            vcards.append(ical.Card(text = text.decode('utf-8'), name = uid))
+            vcards.append((text.decode('utf-8'), uid))
         return vcards
 
     def update2(self):
@@ -80,7 +80,7 @@ class Abook(object):
         return self._events
 
     def text(self):
-        cal = [e.text.replace('\n', '\r\n') for e in self.vcal()]
+        cal = [e[0].replace('\n', '\r\n') for e in self.vcal()]
         return '\r\n\r\n'.join(cal)
 
     def last_modified(self):

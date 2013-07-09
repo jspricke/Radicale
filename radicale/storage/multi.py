@@ -80,7 +80,12 @@ class Collection(ical.Collection):
     @property
     def components(self):
         """Get list of all components in collection."""
-        return self._rem.vcal()
+        items = self._rem.vcal()
+        if isinstance(self._rem, Remind):
+            return [ical.Event(text = item[0], name = item[1]) for item in items]
+        elif isinstance(self._rem, Abook):
+            return [ical.Card(text = item[0], name = item[1]) for item in items]
+        return items
 
     @classmethod
     def from_path(cls, path, depth="1", include_container=True):

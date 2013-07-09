@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # This file is part of Radicale Server - Calendar Server
@@ -23,7 +24,6 @@ Remind storage backend.
 
 import os
 import time
-from .. import ical
 from datetime import date, datetime, timedelta
 from subprocess import Popen, PIPE
 from pytz import timezone, UTC
@@ -114,8 +114,7 @@ class Remind(object):
         vevent.append("UID:%s" % event['uid'])
         vevent.append("X-RADICALE-NAME:%s" % event['uid'])
         vevent.append("END:VEVENT")
-        ievent = ical.Event(text = '\n'.join(vevent), name = event['uid'])
-        return ievent
+        return ('\n'.join(vevent),  event['uid'])
 
     def _update(self):
         self._files = {}
@@ -147,7 +146,7 @@ class Remind(object):
         cal.append("BEGIN:VCALENDAR")
         cal.append("VERSION:2.0")
         cal.append("PRODID:-//Radicale//NONSGML Radicale Server//EN")
-        cal += [e.text.replace('\n', '\r\n') for e in self.vcal()]
+        cal += [e[0].replace('\n', '\r\n') for e in self.vcal()]
         cal.append("END:VCALENDAR")
         return '\r\n'.join(cal)
 
