@@ -21,8 +21,8 @@ Multi storage backend.
 
 """
 
-import os
-import time
+from os.path import expanduser
+from time import strftime
 from contextlib import contextmanager
 from .. import config, ical
 
@@ -46,8 +46,8 @@ class Empty(object):
 from remind import Remind
 from abook import Abook
 EMPTY = Empty()
-REM = Remind(os.path.expanduser(config.get("storage", "remind_file")))
-ABOOK = Abook(os.path.expanduser(config.get("storage", "abook_file")))
+REM = Remind(expanduser(config.get("storage", "remind_file")))
+ABOOK = Abook(expanduser(config.get("storage", "abook_file")))
 
 class Collection(ical.Collection):
     """Collection Adapter for remind and abook storage."""
@@ -119,7 +119,7 @@ class Collection(ical.Collection):
 
     @property
     def last_modified(self):
-        return time.strftime("%a, %d %b %Y %H:%M:%S +0000", self._rem.last_modified())
+        return strftime("%a, %d %b %Y %H:%M:%S +0000", self._rem.last_modified())
 
     @property
     @contextmanager

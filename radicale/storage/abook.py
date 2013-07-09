@@ -22,10 +22,10 @@ Abook storage backend.
 
 """
 
-import os
-import time
+from os.path import getmtime
+from time import gmtime
 from threading import Lock
-import ConfigParser
+from ConfigParser import ConfigParser
 
 class Abook(object):
 
@@ -36,7 +36,7 @@ class Abook(object):
         self._lock = Lock()
 
     def vcard(self):
-        abook = ConfigParser.ConfigParser()
+        abook = ConfigParser()
         abook.read(self.filename)
         vcards = []
         for i in abook.sections()[1:]:
@@ -70,9 +70,9 @@ class Abook(object):
 
     def update2(self):
         self._lock.acquire()
-        if os.path.getmtime(self.filename) > self.last_modified:
+        if getmtime(self.filename) > self.last_modified:
             self._events = self.vcard()
-            self.last_modified = os.path.getmtime(self.filename)
+            self.last_modified = getmtime(self.filename)
         self._lock.release()
 
     def vcal(self):
@@ -85,7 +85,7 @@ class Abook(object):
 
     def last_modified(self):
         self.update2()
-        return time.gmtime(self.filename)
+        return gmtime(self.filename)
 
     def append(self, text):
         raise NotImplementedError

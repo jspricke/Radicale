@@ -22,18 +22,18 @@ Remind storage backend.
 
 """
 
-import os
-import time
+from os.path import getmtime
+from time import gmtime
 from datetime import date, datetime, timedelta
 from subprocess import Popen, PIPE
 from pytz import timezone, UTC
 from threading import Lock
-import vobject
+from vobject import readOne
 
 class Remind(object):
 
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, filename=None):
+        self._filename = filename
         self._files = {}
         self._events = []
         self._lock = Lock()
@@ -45,7 +45,7 @@ class Remind(object):
 
             event = {}
             if line[3] not in self._files:
-                self._files[line[3]] = (os.path.getmtime(line[3]), [l for l in open(line[3])])
+                self._files[line[3]] = (getmtime(line[3]), [l for l in open(line[3])])
             hsh = hash(self._files[line[3]][1][int(line[2])-1])
             uid = "%s:%s:%s" % (line[3].replace('/', '-'), line[2], hsh)
             event['uid'] = uid
@@ -101,7 +101,7 @@ class Remind(object):
             vevent.append("DTSTART;VALUE=DATE:%s" % dtstart[0])
             if len(dtstart) > 1:
                 for eventa, eventb in zip(event['dtstart'][:-1], event['dtstart'][1:]):
-                    if eventb - eventa != timedelta(days=1):
+                    if (eventb - eventa).days != 1:
                         vevent.append("RRULE:FREQ=YEARLY;INTERVAL=1;COUNT=1")
                         vevent.append("RDATE;VALUE=DATE:%s" % ','.join(dtstart[1:]))
                         continue
@@ -119,20 +119,17 @@ class Remind(object):
     def _update(self):
         self._files = {}
         self._events = []
-        rem = Popen(['remind', '-l', '-s15', '-b1', '-r', self.filename, str(date.today() - timedelta(weeks=12))], stdout = PIPE).communicate()[0]
+        rem = Popen(['remind', '-l', '-s15', '-b1', '-r', self._filename, str(date.today() - timedelta(weeks=12))], stdout = PIPE).communicate()[0]
         rem = rem.decode('utf-8')
         events = self._rem_parse(rem[1:])
-        vevents = []
-        for evntlist in events.values():
-            vevents.append(self._mk_vevent(evntlist))
-        return vevents
+        return [self._mk_vevent(event) for event in events.values()]
 
     def update2(self):
         self._lock.acquire()
         if len(self._files) == 0:
             self._events = self._update()
         for fname in self._files:
-            if os.path.getmtime(fname) > self._files[fname][0]:
+            if getmtime(fname) > self._files[fname][0]:
                 self._events = self._update()
                 break
         self._lock.release()
@@ -152,10 +149,10 @@ class Remind(object):
 
     def last_modified(self):
         self.update2()
-        return time.gmtime(max([os.path.getmtime(fname[0]) for fname in self._files]))
+        return gmtime(max([getmtime(fname[0]) for fname in self._files]))
 
     def append(self, text):
-        cal = vobject.readOne(text)
+        cal = readOne(text)
         reminders = []
         for event in cal.vevent_list:
             remind = []
@@ -178,7 +175,7 @@ class Remind(object):
                 remind.append(" %s" % event.description.value.replace('\n', ' ').encode('utf-8'))
             reminders.append(" ".join(remind))
             reminders.append("\n")
-        open(self.filename, 'a').write(''.join(reminders))
+        open(self._filename, 'a').write(''.join(reminders))
 
     def remove(self, name):
         (filename, line, delhash) = name.split(':')
