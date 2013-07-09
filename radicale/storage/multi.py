@@ -29,7 +29,7 @@ from .. import config, ical
 class Empty(object):
 
     def vcal(self):
-        return [Collection(REM), Collection(ABOOK)]
+        return [Collection(REM, '/remind'), Collection(ABOOK, '/abook')]
 
     def text(self):
         return ""
@@ -46,9 +46,6 @@ class Empty(object):
     def props(self):
         return {'tag': 'VCALENDAR'}
 
-    def path(self):
-        return ""
-
 from remind import Remind
 from abook import Abook
 EMPTY = Empty()
@@ -58,8 +55,8 @@ ABOOK = Abook(os.path.expanduser(config.get("storage", "abook_file")))
 class Collection(ical.Collection):
     """Collection Adapter for remind and abook storage."""
 
-    def __init__(self, storage, principal=False):
-        super(Collection, self).__init__(storage.path(), principal)
+    def __init__(self, storage, storPath, principal=False):
+        super(Collection, self).__init__(storPath, principal)
         self._rem = storage
 
     def append(self, name, text):
@@ -92,17 +89,20 @@ class Collection(ical.Collection):
     def from_path(cls, path, depth="1", include_container=True):
         if path == '/':
             storage = EMPTY
+            storPath = ''
         elif path.startswith('/remind'):
             storage = REM
+            storPath = '/remind'
         elif path.startswith('/abook'):
             storage = ABOOK
+            storPath = '/abook'
         else:
             raise NotImplementedError
         if depth == "0":
-            return [cls(storage, True)]
+            return [cls(storage, storPath, True)]
 
         result = []
-        collection = cls(storage, True)
+        collection = cls(storage, storPath, True)
         if include_container:
             result.append(collection)
         result.extend(collection.components)

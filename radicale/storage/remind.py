@@ -195,9 +195,6 @@ class Remind(object):
     def props(self):
         return {'tag': 'VCALENDAR'}
 
-    def path(self):
-        return "remind"
-
 if __name__ == '__main__':
     from sys import argv, stdout
     stdout.write('{0}\r\n'.format(Remind(argv[1]).text().encode('utf-8')))

@@ -93,12 +93,6 @@ class Abook(object):
     def remove(self, name):
         raise NotImplementedError
 
-    def props(self):
-        return {'tag': 'VADDRESSBOOK'}
-
-    def path(self):
-        return "abook"
-
 if __name__ == '__main__':
     from sys import argv, stdout
     stdout.write('{0}\r\n'.format(Abook(argv[1]).text().encode('utf-8')))
