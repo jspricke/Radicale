@@ -192,9 +192,6 @@ class Remind(object):
             del rem[line]
             open(filename, 'w').writelines(rem)
 
-    def props(self):
-        return {'tag': 'VCALENDAR'}
-
 if __name__ == '__main__':
     from sys import argv, stdout
     stdout.write('{0}\r\n'.format(Remind(argv[1]).text().encode('utf-8')))

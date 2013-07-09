@@ -43,9 +43,6 @@ class Empty(object):
     def remove(self, name):
         raise NotImplementedError
 
-    def props(self):
-        return {'tag': 'VCALENDAR'}
-
 from remind import Remind
 from abook import Abook
 EMPTY = Empty()
@@ -123,5 +120,8 @@ class Collection(ical.Collection):
     @contextmanager
     def props(self):
         # On enter
-        yield self._rem.props()
+        if isinstance(self._rem, Abook):
+            yield {'tag': 'VADDRESSBOOK'}
+        else:
+            yield {'tag': 'VCALENDAR'}
         # On exit
