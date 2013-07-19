@@ -104,7 +104,7 @@ class Remind(object):
                     if (eventb - eventa).days != 1:
                         vevent.append("RRULE:FREQ=YEARLY;INTERVAL=1;COUNT=1")
                         vevent.append("RDATE;VALUE=DATE:%s" % ','.join(dtstart[1:]))
-                        continue
+                        break
                     event['dtstart'] = [event['dtstart'][-1]]
             dtend = event['dtstart'][0]
             dtend += timedelta(days=1)
