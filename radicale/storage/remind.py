@@ -32,8 +32,9 @@ from vobject import readOne
 
 class Remind(object):
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, label=None):
         self._filename = filename
+        self._label = label
         self._files = {}
         self._events = []
         self._lock = Lock()
@@ -151,8 +152,7 @@ class Remind(object):
         self.update2()
         return gmtime(max([getmtime(fname[0]) for fname in self._files]))
 
-    @classmethod
-    def ical(cls, text):
+    def ical(self, text):
         cal = readOne(text)
         reminders = []
         for event in cal.vevent_list:
@@ -164,13 +164,16 @@ class Remind(object):
                 remind.append(event.dtstart.value.strftime("%b %d %Y"))
             if hasattr(event, 'dtend'):
                 duration = event.dtend.value - event.dtstart.value
-            elif hasattr(event, 'duration'):
+            elif hasattr(event, 'duration') and event.duration.value:
                 duration = event.duration.value
             if duration:
                 remind.append("DURATION %d:%02d" % divmod(duration.seconds / 60, 60))
             #TODO parse RRULE
-            remind.append("MSG %s" % event.summary.value.encode('utf-8'))
-            if hasattr(event, 'location'):
+            remind.append("MSG")
+            if self._label:
+                remind.append(self._label)
+            remind.append("%s" % event.summary.value.encode('utf-8'))
+            if hasattr(event, 'location') and event.location.value:
                 remind.append("at %s" % event.location.value.encode('utf-8'))
             if hasattr(event, 'description'):
                 remind.append(" %s" % event.description.value.replace('\n', ' ').encode('utf-8'))
