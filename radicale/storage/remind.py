@@ -25,6 +25,7 @@ Remind storage backend.
 from os.path import getmtime
 from time import gmtime
 from datetime import date, datetime, timedelta
+from dateutil import rrule
 from subprocess import Popen, PIPE
 from pytz import timezone, UTC
 from threading import Lock
@@ -158,25 +159,47 @@ class Remind(object):
         for event in cal.vevent_list:
             remind = []
             remind.append("REM")
-            if isinstance(event.dtstart.value, datetime):
-                remind.append(event.dtstart.value.strftime("%b %d %Y AT %H:%M"))
-            else:
-                remind.append(event.dtstart.value.strftime("%b %d %Y"))
+            remind.append(event.dtstart.value.strftime("%b %d %Y"))
+            if hasattr(event, 'rrule'):
+                if event.rruleset._rrule[0]._freq == rrule.DAILY or (event.rruleset._rrule[0]._byweekday and len(event.rruleset._rrule[0]._byweekday) > 1):
+                    remind.append(event.dtend.value.strftime('*1'))
+                elif event.rruleset._rrule[0]._freq == rrule.WEEKLY:
+                    remind.append(event.dtend.value.strftime('*7'))
+                else:
+                    print(event.rruleset._rrule[0]._freq)
+                    raise NotImplementedError
+                #TODO BYMONTH
+                if event.rruleset._rrule[0]._byweekday and len(event.rruleset._rrule[0]._byweekday) > 1:
+                    dayNums = set(range(7)) - set(event.rruleset._rrule[0]._byweekday)
+                    weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                    days = [weekdays[day] for day in dayNums]
+                    remind.append('SKIP OMIT %s' % ' '.join(days))
+                remind.append(event.rruleset[-1].strftime('UNTIL %b %d %Y'))
             if hasattr(event, 'dtend'):
                 duration = event.dtend.value - event.dtstart.value
             elif hasattr(event, 'duration') and event.duration.value:
                 duration = event.duration.value
-            if duration:
+            if duration.days > 1 and not hasattr(event, 'rrule'):
+                remind.append(event.dtend.value.strftime('*1'))
+            if isinstance(event.dtstart.value, datetime) and not duration.days > 1:
+                remind.append(event.dtstart.value.astimezone(timezone('Europe/Berlin')).strftime("AT %H:%M"))
+            if duration.days > 1 and not hasattr(event, 'rrule'):
+                if hasattr(event, 'dtend') and not isinstance(event.dtend.value, datetime):
+                    event.dtend.value -= timedelta(days=1)
+                remind.append(event.dtend.value.strftime('UNTIL %b %d %Y'))
+            elif duration.seconds:
                 remind.append("DURATION %d:%02d" % divmod(duration.seconds / 60, 60))
-            #TODO parse RRULE
             remind.append("MSG")
             if self._label:
                 remind.append(self._label)
             remind.append("%s" % event.summary.value.encode('utf-8'))
             if hasattr(event, 'location') and event.location.value:
                 remind.append("at %s" % event.location.value.encode('utf-8'))
-            if hasattr(event, 'description'):
-                remind.append(" %s" % event.description.value.replace('\n', ' ').encode('utf-8'))
+            if hasattr(event, 'description') and event.description.value:
+                remind.append("%s" % event.description.value.replace('\n', ' ').encode('utf-8'))
+            if duration.days > 1 and not hasattr(event, 'rrule') and duration.seconds:
+                remind.append(event.dtstart.value.astimezone(timezone('Europe/Berlin')).strftime("START %b %d %Y %H:%M"))
+                remind.append(event.dtend.value.astimezone(timezone('Europe/Berlin')).strftime('END %b %d %Y %H:%M'))
             reminders.append(" ".join(remind))
             reminders.append("\n")
         return reminders
