@@ -220,5 +220,14 @@ class Remind(object):
             open(filename, 'w').writelines(rem)
 
 if __name__ == '__main__':
-    from sys import argv, stdout
-    stdout.write('{0}\r\n'.format(Remind(argv[1]).text().encode('utf-8')))
+    from sys import argv, stdout, stdin
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option('-i', '--ical', action='store_true',  help='Generate ical output')
+    parser.add_option('-l', '--label', help='Label for every entry')
+    (options, args) = parser.parse_args()
+    rem = Remind(label=options.label)
+    if options.ical:
+        stdout.write('{0}\r\n'.format(Remind(argv[2]).text().encode('utf-8')))
+    else:
+        stdout.write(''.join(rem.ical(stdin.read())))
