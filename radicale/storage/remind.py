@@ -162,9 +162,9 @@ class Remind(object):
             remind.append(event.dtstart.value.strftime("%b %d %Y"))
             if hasattr(event, 'rrule'):
                 if event.rruleset._rrule[0]._freq == rrule.DAILY or (event.rruleset._rrule[0]._byweekday and len(event.rruleset._rrule[0]._byweekday) > 1):
-                    remind.append(event.dtend.value.strftime('*1'))
+                    remind.append('*1')
                 elif event.rruleset._rrule[0]._freq == rrule.WEEKLY:
-                    remind.append(event.dtend.value.strftime('*7'))
+                    remind.append('*7')
                 else:
                     print(event.rruleset._rrule[0]._freq)
                     raise NotImplementedError
@@ -174,7 +174,10 @@ class Remind(object):
                     weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
                     days = [weekdays[day] for day in dayNums]
                     remind.append('SKIP OMIT %s' % ' '.join(days))
-                remind.append(event.rruleset[-1].strftime('UNTIL %b %d %Y'))
+                if event.rruleset._rrule[0]._until:
+                    remind.append(event.rruleset._rrule[0]._until.strftime('UNTIL %b %d %Y'))
+                elif event.rruleset._rrule[0]._count:
+                    remind.append(event.rruleset[-1].strftime('UNTIL %b %d %Y'))
             if hasattr(event, 'dtend'):
                 duration = event.dtend.value - event.dtstart.value
             elif hasattr(event, 'duration') and event.duration.value:
