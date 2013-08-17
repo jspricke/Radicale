@@ -126,7 +126,7 @@ class Collection(ical.Collection):
     def props(self):
         # On enter
         if isinstance(self._rem, Abook):
-            yield {'tag': 'VADDRESSBOOK'}
+            yield {'tag': 'VADDRESSBOOK', 'A:calendar-color': '#33b5e5'}
         else:
-            yield {'tag': 'VCALENDAR'}
+            yield {'tag': 'VCALENDAR', 'A:calendar-color': '#33b5e5'}
         # On exit
