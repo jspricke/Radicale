@@ -49,7 +49,7 @@ class Remind(object):
             if line[3] not in self._files:
                 self._files[line[3]] = (getmtime(line[3]), [l for l in open(line[3])])
             hsh = hash(self._files[line[3]][1][int(line[2])-1])
-            uid = "%s:%s:%s" % (line[3].replace('/', '-'), line[2], hsh)
+            uid = "%s;%s;%s" % (line[3].replace('/', '-'), line[2], hsh)
             event['uid'] = uid
             dat = datend = [int(f) for f in line[4].split('/')]
             times = None if line[8] == '*' else line[9]
@@ -212,7 +212,7 @@ class Remind(object):
         open(self._filename, 'a').write(''.join(reminders))
 
     def remove(self, name):
-        (filename, line, delhash) = name.split(':')
+        (filename, line, delhash) = name.split(';')
         filename = filename.replace('-', '/')
         line = int(line) - 1
         delhash = int(delhash)
