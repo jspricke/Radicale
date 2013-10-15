@@ -61,7 +61,7 @@ class Abook(object):
             address = abook.get(i, 'address') if abook.has_option(i, 'address') else ''
             address2 = abook.get(i, 'address2') if abook.has_option(i, 'address2') else ''
             city = abook.get(i, 'city') if abook.has_option(i, 'city') else ''
-            zipn = abook.get(i, 'zip') if abook.has_option(i, 'zip') else ''
+            zipn = abook.get(i, 'zip') if abook.has_option(i, 'zip') else '0'
             state = abook.get(i, 'state') if abook.has_option(i, 'state') else ''
             country = abook.get(i, 'country') if abook.has_option(i, 'country') else ''
             if abook.has_option(i, 'address') or abook.has_option(i, 'address2') or abook.has_option(i, 'city') or abook.has_option(i, 'country') or abook.has_option(i, 'zip') or abook.has_option(i, 'country'):
