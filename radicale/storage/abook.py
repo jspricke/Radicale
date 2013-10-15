@@ -30,14 +30,14 @@ from ConfigParser import ConfigParser
 class Abook(object):
 
     def __init__(self, filename):
-        self.filename = filename
-        self.last_modified = 0
+        self._filename = filename
+        self._last_modified = 0
         self._events = []
         self._lock = Lock()
 
     def vcard(self):
         abook = ConfigParser()
-        abook.read(self.filename)
+        abook.read(self._filename)
         vcards = []
         for i in abook.sections()[1:]:
             vcard = []
@@ -70,9 +70,9 @@ class Abook(object):
 
     def update2(self):
         self._lock.acquire()
-        if getmtime(self.filename) > self.last_modified:
+        if getmtime(self._filename) > self._last_modified:
             self._events = self.vcard()
-            self.last_modified = getmtime(self.filename)
+            self._last_modified = getmtime(self._filename)
         self._lock.release()
 
     def vcal(self):
