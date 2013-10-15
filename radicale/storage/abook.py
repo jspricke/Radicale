@@ -85,7 +85,7 @@ class Abook(object):
 
     def last_modified(self):
         self.update2()
-        return gmtime(self.filename)
+        return gmtime(self._last_modified)
 
     def append(self, text):
         raise NotImplementedError
