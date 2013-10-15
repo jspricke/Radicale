@@ -42,27 +42,30 @@ class Abook(object):
         for i in abook.sections()[1:]:
             vcard = []
             vcard.append("BEGIN:VCARD")
-            vcard.append("VERSION:3.0")
+            vcard.append("VERSION:4.0")
+            uid = "%s;%d" % (i, hash(abook.get(i, 'name')))
+            vcard.append("UID:%s" % uid)
             vcard.append("FN:%s" % abook.get(i, 'name'))
+            if abook.has_option(i, 'nick'): vcard.append("NICKNAME:%s" % abook.get(i, 'nick'))
             vcard.append("N:%s;%s" % (abook.get(i, 'name').split(' ')[-1], ' '.join(abook.get(i, 'name').split(' ')[:-1])))
+            if abook.has_option(i, 'email'):
+                for mail in abook.get(i, 'email').split(','):
+                    vcard.append("EMAIL:%s" % mail)
+            if abook.has_option(i, 'phone'): vcard.append("TEL;TYPE=HOME:%s" % abook.get(i, 'phone'))
+            if abook.has_option(i, 'workphone'): vcard.append("TEL;TYPE=WORK:%s" % abook.get(i, 'workphone'))
+            if abook.has_option(i, 'mobile'): vcard.append("TEL;TYPE=CELL:%s" % abook.get(i, 'mobile'))
+            if abook.has_option(i, 'url'): vcard.append("URL:%s" % abook.get(i, 'url'))
+            if abook.has_option(i, 'custom1'): vcard.append("NOTE:%s" % abook.get(i, 'custom1').replace(',', '\,'))
+            if abook.has_option(i, 'custom2'): vcard.append("NOTE:%s" % abook.get(i, 'custom2').replace(',', '\,'))
+            if abook.has_option(i, 'custom3'): vcard.append("NOTE:%s" % abook.get(i, 'custom3').replace(',', '\,'))
             address = abook.get(i, 'address') if abook.has_option(i, 'address') else ''
             address2 = abook.get(i, 'address2') if abook.has_option(i, 'address2') else ''
             city = abook.get(i, 'city') if abook.has_option(i, 'city') else ''
             zipn = abook.get(i, 'zip') if abook.has_option(i, 'zip') else ''
             state = abook.get(i, 'state') if abook.has_option(i, 'state') else ''
             country = abook.get(i, 'country') if abook.has_option(i, 'country') else ''
-            if abook.has_option(i, 'address') or abook.has_option(i, 'address') or abook.has_option(i, 'city') or abook.has_option(i, 'country') or abook.has_option(i, 'zip') or abook.has_option(i, 'country'):
-                vcard.append("ADR:;;%s;%s;%s;%s;%s;%s" % (address, address2, city, state, zipn, country))
-            if abook.has_option(i, 'phone'): vcard.append("TEL;HOME:%s" % abook.get(i, 'phone'))
-            if abook.has_option(i, 'workphone'): vcard.append("TEL;WORK:%s" % abook.get(i, 'workphone'))
-            if abook.has_option(i, 'mobile'): vcard.append("TEL;CELL:%s" % abook.get(i, 'mobile'))
-            if abook.has_option(i, 'email'):
-                for mail in abook.get(i, 'email').split(','):
-                    vcard.append("EMAIL;INTERNET:%s" % mail)
-            if abook.has_option(i, 'url'): vcard.append("URL:%s" % abook.get(i, 'url'))
-            if abook.has_option(i, 'nick'): vcard.append("X-ANDROID-CUSTOM:vnd.android.cursor.item/nickname;%s;1;;;;;;;;;;;;;" % abook.get(i, 'nick'))
-            uid = "%d" % hash(abook.get(i, 'name'))
-            vcard.append("UID:%s" % uid)
+            if abook.has_option(i, 'address') or abook.has_option(i, 'address2') or abook.has_option(i, 'city') or abook.has_option(i, 'country') or abook.has_option(i, 'zip') or abook.has_option(i, 'country'):
+              vcard.append("ADR;TYPE=home:;%s;%s;%s;%s;%s;%s" % (address2, address, city, state, zipn, country))
             vcard.append("END:VCARD")
             text = '\n'.join(vcard)
             vcards.append((text.decode('utf-8'), uid))
