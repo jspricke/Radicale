@@ -185,7 +185,7 @@ class Remind(object):
             if duration.days > 1 and not hasattr(event, 'rrule'):
                 remind.append(event.dtend.value.strftime('*1'))
             if isinstance(event.dtstart.value, datetime) and not duration.days > 1:
-                remind.append(event.dtstart.value.astimezone(timezone('Europe/Berlin')).strftime("AT %H:%M"))
+                remind.append(event.dtstart.value.strftime("AT %H:%M"))
             if duration.days > 1 and not hasattr(event, 'rrule'):
                 if hasattr(event, 'dtend') and not isinstance(event.dtend.value, datetime):
                     event.dtend.value -= timedelta(days=1)
