@@ -32,10 +32,10 @@ class Empty(object):
         return [Collection(REM, '/remind'), Collection(ABOOK, '/abook')]
 
     def text(self):
-        return ""
+        return ''
 
     def last_modified(self):
-        return ""
+        return ''
 
     def append(self, text):
         raise NotImplementedError
@@ -46,8 +46,8 @@ class Empty(object):
 from remind import Remind
 from abook import Abook
 EMPTY = Empty()
-REM = Remind(expanduser(config.get("storage", "remind_file")))
-ABOOK = Abook(expanduser(config.get("storage", "abook_file")))
+REM = Remind(expanduser(config.get('storage', 'remind_file')))
+ABOOK = Abook(expanduser(config.get('storage', 'abook_file')))
 
 class Collection(ical.Collection):
     """Collection Adapter for remind and abook storage."""
@@ -88,7 +88,7 @@ class Collection(ical.Collection):
         return items
 
     @classmethod
-    def from_path(cls, path, depth="1", include_container=True):
+    def from_path(cls, path, depth='1', include_container=True):
         if path == '/':
             storage = EMPTY
             storPath = ''
@@ -100,7 +100,7 @@ class Collection(ical.Collection):
             storPath = '/abook'
         else:
             raise NotImplementedError
-        if depth == "0":
+        if depth == '0':
             return [cls(storage, storPath, True)]
 
         result = []
@@ -112,14 +112,14 @@ class Collection(ical.Collection):
 
     @classmethod
     def is_node(cls, path):
-        return path == ""
+        return path == ''
 
     def is_leaf(self, path):
-        return path != "" and path.startswith(self.path)
+        return path != '' and path.startswith(self.path)
 
     @property
     def last_modified(self):
-        return strftime("%a, %d %b %Y %H:%M:%S +0000", self._rem.last_modified())
+        return strftime('%a, %d %b %Y %H:%M:%S +0000', self._rem.last_modified())
 
     @property
     @contextmanager

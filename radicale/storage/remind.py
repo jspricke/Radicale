@@ -49,7 +49,7 @@ class Remind(object):
             if line[3] not in self._files:
                 self._files[line[3]] = (getmtime(line[3]), [l for l in open(line[3])])
             hsh = hash(self._files[line[3]][1][int(line[2])-1])
-            uid = "%s;%s;%s" % (line[3].replace('/', '-'), line[2], hsh)
+            uid = '%s;%s;%s' % (line[3].replace('/', '-'), line[2], hsh)
             event['uid'] = uid
             dat = datend = [int(f) for f in line[4].split('/')]
             times = None if line[8] == '*' else line[9]
@@ -88,34 +88,34 @@ class Remind(object):
 
     def _mk_vevent(self, event):
         vevent = []
-        vevent.append("BEGIN:VEVENT")
+        vevent.append('BEGIN:VEVENT')
         if 'dtend' in event:
             local_tz = timezone('Europe/Berlin')
-            vevent.append("DTSTART;TZID=Europe/Berlin:%04d%02d%02dT%02d%02d00" % (event['dtstart'][0].year, event['dtstart'][0].month, event['dtstart'][0].day, event['dtstart'][0].hour, event['dtstart'][0].minute))
-            vevent.append("DTEND;TZID=Europe/Berlin:%04d%02d%02dT%02d%02d00" % (event['dtend'].year, event['dtend'].month, event['dtend'].day, event['dtend'].hour, event['dtend'].minute))
+            vevent.append('DTSTART;TZID=Europe/Berlin:%04d%02d%02dT%02d%02d00' % (event['dtstart'][0].year, event['dtstart'][0].month, event['dtstart'][0].day, event['dtstart'][0].hour, event['dtstart'][0].minute))
+            vevent.append('DTEND;TZID=Europe/Berlin:%04d%02d%02dT%02d%02d00' % (event['dtend'].year, event['dtend'].month, event['dtend'].day, event['dtend'].hour, event['dtend'].minute))
             if len(event['dtstart']) > 1:
                 rdates = [local_tz.localize(d).astimezone(UTC) for d in event['dtstart'][1:]]
-                rdates2 = ["%04d%02d%02dT%02d%02d00Z" % (utcstart.year, utcstart.month, utcstart.day, utcstart.hour, utcstart.minute) for utcstart in rdates]
-                vevent.append("RRULE:FREQ=YEARLY;INTERVAL=1;COUNT=1")
-                vevent.append("RDATE:%s" % ','.join(rdates2))
+                rdates2 = ['%04d%02d%02dT%02d%02d00Z' % (utcstart.year, utcstart.month, utcstart.day, utcstart.hour, utcstart.minute) for utcstart in rdates]
+                vevent.append('RRULE:FREQ=YEARLY;INTERVAL=1;COUNT=1')
+                vevent.append('RDATE:%s' % ','.join(rdates2))
         else:
-            dtstart = ["%04d%02d%02d" % (d.year, d.month, d.day) for d in event['dtstart']]
-            vevent.append("DTSTART;VALUE=DATE:%s" % dtstart[0])
+            dtstart = ['%04d%02d%02d' % (d.year, d.month, d.day) for d in event['dtstart']]
+            vevent.append('DTSTART;VALUE=DATE:%s' % dtstart[0])
             if len(dtstart) > 1:
                 for eventa, eventb in zip(event['dtstart'][:-1], event['dtstart'][1:]):
                     if (eventb - eventa).days != 1:
-                        vevent.append("RRULE:FREQ=YEARLY;INTERVAL=1;COUNT=1")
-                        vevent.append("RDATE;VALUE=DATE:%s" % ','.join(dtstart[1:]))
+                        vevent.append('RRULE:FREQ=YEARLY;INTERVAL=1;COUNT=1')
+                        vevent.append('RDATE;VALUE=DATE:%s' % ','.join(dtstart[1:]))
                         break
                     event['dtstart'] = [event['dtstart'][-1]]
             dtend = event['dtstart'][0]
             dtend += timedelta(days=1)
-            vevent.append("DTEND;VALUE=DATE:%04d%02d%02d" % (dtend.year, dtend.month, dtend.day))
+            vevent.append('DTEND;VALUE=DATE:%04d%02d%02d' % (dtend.year, dtend.month, dtend.day))
 
-        vevent.append("SUMMARY:%s" % event['msg'])
-        vevent.append("UID:%s" % event['uid'])
-        vevent.append("X-RADICALE-NAME:%s" % event['uid'])
-        vevent.append("END:VEVENT")
+        vevent.append('SUMMARY:%s' % event['msg'])
+        vevent.append('UID:%s' % event['uid'])
+        vevent.append('X-RADICALE-NAME:%s' % event['uid'])
+        vevent.append('END:VEVENT')
         return ('\n'.join(vevent),  event['uid'])
 
     def _update(self):
@@ -142,11 +142,11 @@ class Remind(object):
 
     def text(self):
         cal = []
-        cal.append("BEGIN:VCALENDAR")
-        cal.append("VERSION:2.0")
-        cal.append("PRODID:-//Radicale//NONSGML Radicale Server//EN")
+        cal.append('BEGIN:VCALENDAR')
+        cal.append('VERSION:2.0')
+        cal.append('PRODID:-//Radicale//NONSGML Radicale Server//EN')
         cal += [e[0].replace('\n', '\r\n') for e in self.vcal()]
-        cal.append("END:VCALENDAR")
+        cal.append('END:VCALENDAR')
         return '\r\n'.join(cal)
 
     def last_modified(self):
@@ -158,8 +158,8 @@ class Remind(object):
         reminders = []
         for event in cal.vevent_list:
             remind = []
-            remind.append("REM")
-            remind.append(event.dtstart.value.strftime("%b %d %Y"))
+            remind.append('REM')
+            remind.append(event.dtstart.value.strftime('%b %d %Y'))
             if hasattr(event, 'rrule'):
                 if event.rruleset._rrule[0]._freq == rrule.DAILY or (event.rruleset._rrule[0]._byweekday and len(event.rruleset._rrule[0]._byweekday) > 1):
                     remind.append('*1')
@@ -185,26 +185,26 @@ class Remind(object):
             if duration.days > 1 and not hasattr(event, 'rrule'):
                 remind.append(event.dtend.value.strftime('*1'))
             if isinstance(event.dtstart.value, datetime) and not duration.days > 1:
-                remind.append(event.dtstart.value.strftime("AT %H:%M"))
+                remind.append(event.dtstart.value.strftime('AT %H:%M'))
             if duration.days > 1 and not hasattr(event, 'rrule'):
                 if hasattr(event, 'dtend') and not isinstance(event.dtend.value, datetime):
                     event.dtend.value -= timedelta(days=1)
                 remind.append(event.dtend.value.strftime('UNTIL %b %d %Y'))
             elif duration.seconds:
-                remind.append("DURATION %d:%02d" % divmod(duration.seconds / 60, 60))
-            remind.append("MSG")
+                remind.append('DURATION %d:%02d' % divmod(duration.seconds / 60, 60))
+            remind.append('MSG')
             if self._label:
                 remind.append(self._label)
-            remind.append("%s" % event.summary.value.encode('utf-8'))
+            remind.append('%s' % event.summary.value.encode('utf-8'))
             if hasattr(event, 'location') and event.location.value:
-                remind.append("at %s" % event.location.value.encode('utf-8'))
+                remind.append('at %s' % event.location.value.encode('utf-8'))
             if hasattr(event, 'description') and event.description.value:
-                remind.append("%s" % event.description.value.replace('\n', ' ').encode('utf-8'))
+                remind.append('%s' % event.description.value.replace('\n', ' ').encode('utf-8'))
             if duration.days > 1 and not hasattr(event, 'rrule') and duration.seconds:
-                remind.append(event.dtstart.value.astimezone(timezone('Europe/Berlin')).strftime("START %b %d %Y %H:%M"))
+                remind.append(event.dtstart.value.astimezone(timezone('Europe/Berlin')).strftime('START %b %d %Y %H:%M'))
                 remind.append(event.dtend.value.astimezone(timezone('Europe/Berlin')).strftime('END %b %d %Y %H:%M'))
-            reminders.append(" ".join(remind))
-            reminders.append("\n")
+            reminders.append(' '.join(remind))
+            reminders.append('\n')
         return reminders
 
     def append(self, text):
