@@ -29,7 +29,24 @@ from .. import config, ical
 class Empty(object):
 
     def vcal(self):
-        return [Collection(REM, '/remind'), Collection(ABOOK, '/abook')]
+        return [Collection(USER, '/%s' % config.get('storage', 'multi_user'))]
+
+    def text(self):
+        return ''
+
+    def last_modified(self):
+        raise NotImplementedError
+
+    def append(self, text):
+        raise NotImplementedError
+
+    def remove(self, name):
+        raise NotImplementedError
+
+class User(object):
+
+    def vcal(self):
+        return [Collection(REM, '/%s/default.ics' % config.get('storage', 'multi_user')), Collection(ABOOK, '/%s/default.vcf' % config.get('storage', 'multi_user'))]
 
     def text(self):
         return ''
@@ -46,6 +63,7 @@ class Empty(object):
 from remind import Remind
 from abook import Abook
 EMPTY = Empty()
+USER = User()
 REM = Remind(expanduser(config.get('storage', 'remind_file')))
 ABOOK = Abook(expanduser(config.get('storage', 'abook_file')))
 
@@ -92,19 +110,22 @@ class Collection(ical.Collection):
         if path == '/':
             storage = EMPTY
             storPath = ''
-        elif path.startswith('/remind'):
+        elif path == '/%s/' % config.get('storage', 'multi_user'):
+            storage = USER
+            storPath = '/%s/' % config.get('storage', 'multi_user')
+        elif path.startswith('/%s/default.ics/' % config.get('storage', 'multi_user')):
             storage = REM
-            storPath = '/remind'
-        elif path.startswith('/abook'):
+            storPath = '/%s/default.ics/' % config.get('storage', 'multi_user')
+        elif path.startswith('/%s/default.vcf/' % config.get('storage', 'multi_user')):
             storage = ABOOK
-            storPath = '/abook'
+            storPath = '/%s/default.vcf/' % config.get('storage', 'multi_user')
         else:
             raise NotImplementedError
         if depth == '0':
-            return [cls(storage, storPath, True)]
+            return [Collection(storage, storPath, True)]
 
         result = []
-        collection = cls(storage, storPath, True)
+        collection = Collection(storage, storPath, True)
         if include_container:
             result.append(collection)
         result.extend(collection.components)
@@ -112,10 +133,10 @@ class Collection(ical.Collection):
 
     @classmethod
     def is_node(cls, path):
-        return path == ''
+        return path == '' or path == '/%s' % config.get('storage', 'multi_user')
 
     def is_leaf(self, path):
-        return path != '' and path.startswith(self.path)
+        return path != '' and path != '/%s/' % config.get('storage', 'multi_user') and path.startswith(self.path)
 
     @property
     def last_modified(self):
