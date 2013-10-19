@@ -30,7 +30,7 @@ from vobject import readComponents
 
 class Abook(object):
 
-    def __init__(self, filename):
+    def __init__(self, filename=None):
         self._filename = filename
         self._last_modified = 0
         self._events = []
@@ -153,5 +153,19 @@ class Abook(object):
             abook.write(open(self._filename, 'w'))
 
 if __name__ == '__main__':
-    from sys import argv, stdout
-    stdout.write('{0}\r\n'.format(Abook(argv[1]).text().encode('utf-8')))
+    from sys import argv, stdout, stdin
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option('-v', '--vcard', action='store_true',  help='Generate vCard output')
+    (options, args) = parser.parse_args()
+    if options.vcard:
+        stdout.write('{0}\r\n'.format(Abook(argv[2]).text().encode('utf-8')))
+    else:
+        stdout.write("# abook addressbook file\n\n")
+        cParser = ConfigParser()
+        cParser.add_section('format')
+        cParser.set('format', 'program', 'abook')
+        cParser.set('format', 'version', '0.6.0pre2')
+        for (i, vcard) in enumerate(readComponents(stdin.read())):
+            Abook().abook(vcard, str(i), cParser)
+        cParser.write(stdout)
