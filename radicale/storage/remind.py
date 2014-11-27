@@ -88,7 +88,8 @@ class Remind(object):
 
     def _vevent(self, calendar, event):
         vevent = calendar.add('vevent')
-        vevent.add('dtstart').value = event['dtstart'][0]
+        dtstart = vevent.add('dtstart')
+        dtstart.value = event['dtstart'][0]
         vevent.add('summary').value = event['msg']
         vevent.add('uid').value = event['uid']
         if 'dtend' in event:
@@ -99,23 +100,33 @@ class Remind(object):
             vevent.add('dtend').value = event['dtend']
             if len(event['dtstart']) > 1:
                 rset = rrule.rruleset()
-                for dat in event['dtstart'][1:]:
+                for dat in event['dtstart']:
                     # Workaround for a bug in Davdroid
                     # ignore the time zone information for rdates
                     # https://github.com/rfc2822/davdroid/issues/340
                     rset.rdate(dat.astimezone(gettz('UTC')))
+                # temporary set dtstart to a different date, so it's not removed from rset by python-vobject
+                # works around bug in Android:
+                # https://github.com/rfc2822/davdroid/issues/340
+                dtstart.value = event['dtstart'][0] - timedelta(days=1)
                 vevent.rruleset = rset
+                dtstart.value = event['dtstart'][0]
         else:
             if len(event['dtstart']) > 1:
                 if (max(event['dtstart']) - min(event['dtstart'])).days == len(event['dtstart']) - 1:
                     vevent.add('dtend').value = event['dtstart'][-1] + timedelta(days=1)
                 else:
                     rset = rrule.rruleset()
-                    for dat in event['dtstart'][1:]:
+                    for dat in event['dtstart']:
                         # dateutil needs datetime in rruleset, but vobject uses dtstart to detect that it's actually a date
                         # cf. icalendar.py:495 (setrruleset -> isDate)
                         rset.rdate(datetime(dat.year, dat.month, dat.day))
+                    # temporary set dtstart to a different date, so it's not removed from rset by python-vobject
+                    # works around bug in Android:
+                    # https://github.com/rfc2822/davdroid/issues/340
+                    dtstart.value = event['dtstart'][0] - timedelta(days=1)
                     vevent.rruleset = rset
+                    dtstart.value = event['dtstart'][0]
                     vevent.add('dtend').value = event['dtstart'][0] + timedelta(days=1)
             else:
                 vevent.add('dtend').value = event['dtstart'][0] + timedelta(days=1)
