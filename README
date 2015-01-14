@@ -1,4 +1,3 @@
-Radicale is a free and open-source CalDAV and CardDAV server.
+The Remind Radicale adapter moved to: https://github.com/jspricke/radicale-storage
 
-For complete documentation, please visit the Radicale online documentation
-(http://www.radicale.org/documentation).
+This repo will follow upstream and is used for pull request only.
